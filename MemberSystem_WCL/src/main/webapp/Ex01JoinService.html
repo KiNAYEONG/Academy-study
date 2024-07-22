@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<!--  데이터를 전송하는 필수요소(★★★)
+1. action 속성 : 데이터를 전송할 서버의 경로(절대/상대경로)
+e.g. 절대경로 : http://localhost:8085/DataSend/dataSend?data=ddd
+	 상대경로 : dataSend
+
+2. name 속성 : 보낼 데이터에 매핑할 키값 or 이름
+e.g. "Hello World" 입력값, name 속성: "msg"
+	  서버에 보내지는 경로 : dataSend?msg=Hello World
+	  
+3. submit 타입 : 입력된 값을 전송하는 기능
+-->
+
+<!-- html 파일에서 주석하는 법 -> 컨트롤 쉬프트 슬래시 -->
+
+	<h1>데이터 전송 실습1</h1>
+	<form action = "http://localhost:8085/MemberSystem/index.jsp">
+		DATA : <input type = "text" name = "data">
+		<input type = "submit" value = "전송">
+	</form>
+</body>
+</html>

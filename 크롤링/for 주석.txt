@@ -1,6 +1,8 @@
 크롤링_20240812
-### 웹 크롤링
-### 인공지능 개발 과정
-### 데이터 수집 방법
-### HTML, CSS 
-### 웹 크롤링 기술
+# requests 
+# HTTP는 response(status_code : 200, 400, 500)
+# Beautifulsoup
+# id/class/자식/자손 선택자
+# 컬렉션 타입
+# .text 태그 정보 지우기
+# 리스트 컴프리헨슨

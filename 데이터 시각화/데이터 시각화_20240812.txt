@@ -1,0 +1,12 @@
+1. line chart
+2. bar chart
+3. pie chart
+4. scatter
+* subplots : 컬럼에 따라 그래프 만들어줌.
+5. Seaborn을 이용한 차트
+> multiple
+> palette
+> edgecolor
+> linewidth
+6. 버블차트
+7. 히트맵

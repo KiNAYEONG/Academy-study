@@ -14,10 +14,8 @@
 	<!-- JSTL로 생성한 변수는 scope 영역 안에 저장된다. 따로 지정 안하면 page에 저장됨. -->
 	<% session.setAttribute("name", "<script>alert('메롱!');</script>"); %> 
 	<%-- <c:set var="name" value="기나영" scope="session"/> --%>
-	<%-- 나의 이름 : ${name} --%>
-	나의 이름 : 
-	${name}
-	<%-- <c:out value="${name}"/> --%>
+									<!--default는 value 값이 없을 때 test가 나오는 것 -->
+	나의 이름 : <c:out value="${sessionScope.id}" default="test"/> 
 	
 
 </body>

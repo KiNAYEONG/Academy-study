@@ -26,7 +26,7 @@
 		<c:when test="${menu == 3 }">
 			카푸치노
 		</c:when>
-		<c:otherwise>
+		<c:otherwise>   <!-- else 같은 존재 -->
 			안시킬래요
 		</c:otherwise>
 	</c:choose>

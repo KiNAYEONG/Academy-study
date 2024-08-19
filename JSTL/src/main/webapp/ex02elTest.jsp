@@ -15,7 +15,7 @@
 		// EL 찾는 영역 순서
 		// page -> request -> session -> application
 	%>
-	로그인 한 ID :  ${id} <br>
-	이름 : ${sessionScope.id}
+	로그인 한 ID :  ${id} <br> <!-- 기본적으로 페이지에 저장됨. -->
+	이름 : ${sessionScope.id} <!-- 같은 이유로 sessionScope써야 session꺼 가져옴.-->
 </body>
 </html>

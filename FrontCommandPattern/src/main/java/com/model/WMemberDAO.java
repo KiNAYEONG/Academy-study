@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class WMemberDAO {
 
@@ -81,6 +82,63 @@ public class WMemberDAO {
 			close();
 		}
 		return cnt;
+	}
+
+	public WMemberVO login(WMemberVO vo) {
+
+		WMemberVO info = null;
+
+		connect();
+		String sql = "SELECT * FROM WMEMBER WHERE ID = ? AND PW = ?";
+
+		try {
+			pst = conn.prepareStatement(sql);
+			pst.setString(1, vo.getId());
+			pst.setString(2, vo.getPw());
+			rs = pst.executeQuery(); // select는 반드시 rs로 담아준다.
+
+			// 로그인 성공, 커서 이동
+			if (rs.next()) {
+				String id = rs.getString(1); // getString("id")도 가능
+				String pw = rs.getString(2);
+				String nick = rs.getString(3); // 닉네임도 가져오기
+
+				info = new WMemberVO(id, pw, nick); // 로그인 성공하면 info 바꿔치기
+			}
+
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+		return info; // 로그인 실패하면 null 성공하면 아/패/닉
+	}
+
+	public ArrayList<WMemberVO> list() {
+
+		ArrayList<WMemberVO> list = new ArrayList<WMemberVO>();
+
+		connect();
+		String sql = "SELECT * FROM WMEMBER";
+		try {
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+
+			while (rs.next()) {
+				String id = rs.getString(1);
+				String pw = rs.getString(2);
+				String nick = rs.getString(3);
+
+				WMemberVO vo = new WMemberVO(id, pw, nick);
+				list.add(vo);
+			}
+		} catch (SQLException e) {
+			close();
+			e.printStackTrace();
+		}
+
+		return list;
 	}
 
 }

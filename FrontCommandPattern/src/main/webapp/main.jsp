@@ -48,11 +48,11 @@
 				<!--로그인 했을 때  -->
 				<c:if test="${not empty info}">
             		<c:out value="${info.nick}"/>님 welcome!
-            		<a href="logoutService" class="btn btn-danger">로그아웃</a>
+            		<a href="Logout.do" class="btn btn-danger">로그아웃</a>
             	</c:if>
             	<!--ID가 admin일 때  -->
             	<c:if test="${info.id == 'admin'}">
-            		<a href="ListService" class="btn btn-primary">회원정보</a>
+            		<a href="List.do" class="btn btn-primary">회원정보</a>
             	</c:if>
 			</div>
 			<div class="panel-footer">웹기반 인공지능 Track2 (A) - 기나영</div>

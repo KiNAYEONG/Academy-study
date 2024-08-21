@@ -62,7 +62,7 @@ public class WMemberDAO {
 	}
 
 	public int join(WMemberVO vo) {
-		int cnt = 0;
+		int cnt = 0; // 여기는 null 아니어도 되나?
 
 		connect();
 
@@ -115,6 +115,7 @@ public class WMemberDAO {
 		return info; // 로그인 실패하면 null 성공하면 아/패/닉
 	}
 
+	// 회원목록은 계속 추가되니까 가변성 있는 ArrayList 사용
 	public ArrayList<WMemberVO> list() {
 
 		ArrayList<WMemberVO> list = new ArrayList<WMemberVO>();

@@ -37,7 +37,7 @@
 			<div class="panel-heading">회원가입</div>
 			<div class="panel-body">
 
-				<form action="JoinService" method="post">
+				<form action="Join.do" method="post">
 					<div class="form-group">
 						<label for="email">ID:</label> 
 						<input name="id" type="text" class="form-control" id="email">

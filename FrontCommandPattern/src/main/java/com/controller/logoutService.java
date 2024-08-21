@@ -1,21 +1,23 @@
 package com.controller;
 
-import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet("/logoutService")
-public class logoutService extends HttpServlet {
+import com.front.Command;
 
-	protected void service(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		HttpSession session = request.getSession();
-		session.invalidate(); //세션 무효
-		response.sendRedirect("main.jsp");
-	}
+public class LogoutService  implements Command {
+
+   public String execute(HttpServletRequest request, HttpServletResponse response) {
+      
+      HttpSession session = request.getSession();
+      session.invalidate();;  // 특정 자료를 삭제하는 방법 removeAttribute, 전체 섹션을 삭제하는 방법 invalidate
+      
+      System.out.println("로그아웃 성공!");
+      
+      return "main.jsp";
+      
+      
+   }
 
 }

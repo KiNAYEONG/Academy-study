@@ -37,7 +37,7 @@
 			<div class="panel-heading">로그인</div>
 			<div class="panel-body">
 
-				<form action="LoginService" method="post">
+				<form action="Login.do" method="post">
 					<div class="form-group">
 						<label for="email">ID:</label> 
 						<input name="id" type="text" class="form-control" id="email">

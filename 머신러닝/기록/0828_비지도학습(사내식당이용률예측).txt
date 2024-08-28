@@ -1,0 +1,83 @@
+2024-08-28(수)_머신러닝
+# 군집의 개수가 3개일 때 SSE 구해보기~
+-모델.inertia_ : 군집화가 된 이후에 각 centroid(중심점)과 데이터들간의 떨어진 거리
+# 실제 error 개념보다는 군집내에서 포인트들이 중심에 얼마나 더 가까워지는지 확인용 값
+
+# 리스트안에 반복적으로 값을 누적할 때 간단하게 한줄로 사용하는 방법
+- num_list2 = [i+1 for i in range(10)]
+
+# 엘보우 기법 -> 그래프
+# 가장 완만해지는 k 수 찾기 -> 가장 효율적인 클러스터의 수를 의미
+# 직관적이나, 엘보우 지점을 선택하는 과정에서 주관이 개입
+
+# 엘보우 기법 -> 그래프
+# 가장 완만해지는 k 수 찾기 -> 가장 효율적인 클러스터의 수를 의미
+# 직관적이나, 엘보우 지점을 선택하는 과정에서 주관이 개입
+
+# 클러스터의 개수 설정
+ks = range(1,10) 
+
+# ks(클러스터의 개수)에 따른 SSE 구하기
+kmeans_model = [KMeans(n_clusters=k, n_init = 10).fit(df_scaled) for k in ks]
+> 모델 객체생성 및 학습 k가 1~10일때 학습한 결과(모델)가 담긴다.
+
+# SSE 구하기
+kmeans_sse = [model.inertia_ for model in kmeans_model] 
+> kmeans 군집한 결과(1~10)의 SSE가 담긴다.
+
+# n개 그룹과 전체값의 거리
+kmeans_sse
+
+##### 엘보우 포인트 결정
+- 그래프에서 sse 감소율이 급격히 줄어드는 지점
+- 왜 완만한 지점일까?
+    - sse가 더 이상 큰 폭으로 감소하지 않고 변화율이 완만해지는 지점 선택
+    - 이 지점 이후로 클러스터 수를 증가시켜도 sse의 감소율이 줄어들기 때문에
+    - 포인트들이 더 이상 가까워지지 않으므로 얻는 이득이 없다. 
+
+### 실루엣 점수
+- 군집이 효율적으로 잘 되었는지 확인할 수 있는 지표
+- 1에 가까울수록 군집이 잘 되었다고 볼 수 있음
+
+
+from sklearn.metrics import silhouette_score
+silhouette_score(df_scaled, kmeans_model[1].labels_)
+# 결과가 1에 가까울수록 잘 분리된 군집 -> 특성이 비슷한 데이터들끼리는 뭉치고 다른 군집과는 잘 분리되었다.
+
+import scipy.cluster.hierarchy as shc
+
+# 덴드로그램 시각화
+# >색상이 비슷한 것들끼리 군집하면 좋다.
+dendrogram = shc.dendrogram(shc.linkage(df_scaled, method = 'ward'))
+plt.show()
+
+### DBSCAN
+- 밀도를 기반으로 군집화
+mglearn.plots.plot_dbscan()
+plt.show()
+
+# 결과 : 클러스터에 포함되면 색칠! 노이즈같은 잡음은 색칠X
+
+
+from sklearn.cluster import DBSCAN
+# 모델 객체생성
+dbscan = DBSCAN(min_samples=3, eps=2)
+
+# eps : 코어포인트에서 반경
+# min_samples: 코어포인트가 되기위한 최소한의 이웃의 수
+
+df_scaled['dbscan_cluster'] = dbscan.fit_predict(df_scaled)
+
+df_scaled['dbscan_cluster'].value_counts()
+# -1 : 노이즈 데이터
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,121 @@
+2024.08.29.(목)
+### 전처리 : 텍스트데이터 클렌징
+- 문장부호 제거
+- 특정 글자가 반복적으로 나타나는 단어 토큰 제거 (e.g. ㅋㅋㅋ,ㅋㅋ,ㅋㅋㅋㅋㅋㅋ)
+- 1글자 단위의 토큰 제거 : 보통 1글자 단어는 의미를 갖기가 어렵기 때문!
+
+### 정규표현식 (Regular Expression)
+- 특정패턴(규칙)을 가진 문자열의 집합을 표현하는 언어
+- 핸드폰번호, 이메일 같이 패턴이 있는 문자열의 검색과 치환을 위해 사용된다.
+
+import re # 정규표현식을 사용할 수 있는 모듈
+
+# 클렌징할 패턴 생성
+unsmile_p = re.compile('[!?.,;0-9a-zA-Zㅋㅎㄷㅇ~]+')
+# +: 앞에 있는 문자가 한번이라도 반복되면 검출
+
+# 클렌징 완료된 토큰이 들어갈 리스트 생성
+clean_result = []
+for w in clean_word:
+    if unsmile_p.search(w): # 단어토큰이 패턴에 매칭되면
+        continue            # pass
+    if len(w) < 2:          # 한글자 단어라면
+        continue            # pass
+    clean_result.append(w)  # 위의 패턴에 매칭되지 않고 두글자 이상인 데이터들만 리스트에 누적
+
+# 최빈단어 개수 확인
+counter = Counter(clean_result)
+w_m_30 = counter.most_common(30)
+
+# 단어 빈도가 측정된 데이터로 워드클라우드 생성
+wc_rs = wc.generate_from_frequencies(dict(w_m_30))
+plt.imshow(wc_rs)
+
+##### 불용어처리 (stop word)
+- 데이터셋 내에서 불필요한 단어 토큰 제거
+
+# 제거하고자 하는 불용어 리스트에 담기
+stop_words = ['그냥','진짜','근데','존나']
+# 원문에서 제거
+stop_clean_words = [] # 불용어가 제거된 리스트
+for w in clean_result:
+    if w not in stop_words:          # 단어 토큰이 불용어 목록에 있지 않을 경우
+        stop_clean_words.append(w)   # 리스트에 누적
+
+# 카운팅된 결과에서 제거
+dict_w_m_30 = dict(w_m_30)
+for sw in stop_words:
+    del dict_w_m_30[sw]
+
+# Kiwi 라이브러리 사용하기
+형태소 분석 불용어처리, 기타 등등 다양한 자연어처리 기능 지원
+한국어 분석에 좀 더 용이함!
+
+# kiwi 설치하기
+ !pip install kiwipiepy
+
+# 라이브러리 불러오기
+from kiwipiepy import Kiwi
+kiwi=Kiwi()
+
+#띄어쓰기 교정하기!
+kiwi.space("띄어쓰기없이작성된텍스트를교정해주세요얼마나잘하는지확인해봅시다")
+
+# Kiwi를 이용한 불용어처리
+from kiwipiepy.utils import Stopwords
+stopwords = Stopwords() # 기본적인 한국어 불용어가 탑재
+
+kiwi.tokenize("분석 결과에서 불용어만 제외하고 출력할 수도 있다.", stopwords = stopwords)
+
+# 불용어 추가
+stopwords.add(("결과",'NNG'))
+
+kiwi.tokenize("분석 결과에서 불용어만 제외하고 출력할 수도 있다.", stopwords = stopwords)
+
+# 이모지 제거
+# 이모지제거 패키지 설치
+!pip install emoji
+import emoji
+
+# 이모지 제거됨
+emoji.replace_emoji("안녕하세요😘 즐거운 목요일입니다 오늘도 파이팅🐱‍🐉🐱‍🐉🐱‍🐉")
+
+# 이모지 이름을 출력
+emoji.demojize("안녕하세요😘 즐거운 목요일입니다 오늘도 파이팅🐱‍🐉🐱‍🐉🐱‍🐉")
+
+### 형태소 분석
+- 의미를 갖는 말의 가장 작은 단위
+- 형태소 단위로 데이터를 분리하고 품사를 부착하는 작업을 품사태깅
+
+# 형태소로 분리된 단어토큰을 담아줄 리스트
+morphs_list = []
+for w in tqdm(clean_result):
+    morphs_result = kiwi.tokenize(w, stopwords=stopwords)  # 형태소분리, 불용어처리
+    morphs_list = morphs_list + morphs_result
+
+# 특정 품사 필터링하기
+# 일반명사(NNG), 동사(VV), 형용사(VA) 필터링해서 추출해보자~
+morphs_filtering_list = []
+for m in morphs_list:
+    if m.tag in ['NNG','VV','VA']:
+        morphs_filtering_list.append(m.form)
+
+# 단어 빈도가 측정된 데이터로 워드클라우드 생성
+mp_rs = wc.generate_from_frequencies(dict(words_most_45))
+plt.imshow(mp_rs)
+
+
+extra_list = []
+for w in tqdm(person_result):
+    extra_result = kiwi.tokenize(w, stopwords=stopwords)  # 형태소분리, 불용어처리
+    extra_list = extra_list + extra_result
+
+
+# 일반명사(NNG), 동사(VV), 형용사(VA) 필터링해서 추출해보자~
+extra_filtering_list = []
+for m in extra_list:
+    if m.tag in ['NNG','VV','VA']:
+        extra_filtering_list.append(m.form)
+
+
+

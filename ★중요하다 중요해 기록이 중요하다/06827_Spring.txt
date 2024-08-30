@@ -1,0 +1,26 @@
+20240827_Spring
+# BoardController
+- @Controller : 해당 클래스가 Controller가 되기 위해 어노테이션 명시
+-@RequestMapping("/boardList.do") : 해당 url로 요청이 왔을 때 아래 메소드를 실행하겠다.
+-model.addAttribute("list",list); : Spring에서 request의 역할을 model이 담당한다.
+-return "boardList"; :view name을 만들어준것. 이 내용은 boardList.jsp가 된다.
+
+# boardList.jsp
+- <td><c:out value="${vo.idx}"></td> 
+> 출력예시
+> vo.get Name을 통해서 꺼내옴.
+> 그냥 {vo.idx}를 써도 출력은 되지만 c:out value를 쓰는게 더 안전하다. 만약에 내 데이터가 유출되면? 내 데이터가 리셋되면? 그러기 싫음 c:out 쓰는거~
+
+#pom.xml
+- 앞으로 모든 API는 맨 아래에 있는 pom에 넣으세요~
+- dependency에 넣으라고 했던것 같은데....
+- 다른 프로그램과 달리 뭘 깔고 복사하고 할 필요없음. 내가 버전을 pom에 타이핑해주면 버전업 되는 것.
+
+#Board.java *Board는 게시판용으로 만든 파일
+- 어노테이션은 자동완성을 하는게 import 잘 되고 좋음. 
+> 실행 안되고 에러 떴던 주요 이유는 임포트를 안해서였음. 자동완성을 잘 하든가 에러 뜨면 임포트부터 하든가.
+- @ToString
+> 안에 있는 것들을 저장하는 용도
+- @AllArgsConstructor //전체 매개변수 받는 생성자 만들기
+- @NoArgsConstructor  //매개변수 없는 생성자도 추가로 만들어야함.
+> 이건 왜 만든건지 모르겠다 ㅠㅠ

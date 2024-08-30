@@ -1,0 +1,49 @@
+20240830_Spring
+
+#BoardController
+// 게시글 수정 기능
+@RequestMapping("/boardUpdate.do")
+public String boardUpdate(Board vo) {
+mapper.boardUpdate(vo);
+return "redirect:/boardContent.do?idx="+vo.getIdx();}
+->게시글 번호는 단순 문자열이 아닌 java니까 vo.getIdx()로 더해준다.
+
+// 게시글 수정화면 이동 기능
+@RequestMapping("/boardUpdateForm.do")
+public String boardUpdateForm(@RequestParam("idx") int idx, Model model) {
+Board vo = mapper.boardContent(idx); //idx에 맞는 6가지 정보 보여주기
+model.addAttribute("vo",vo); //model에 저장	
+return "boardUpdateForm";
+}
+
+#BoardMapper
+//게시글 수정
+@Update("UPDATE BOARD SET TITLE=#{title},CONTENT=#{content},WRITER=#{writer} WHERE IDX = #{idx}")
+public void boardUpdate(Board vo);
+-> 식별자인 idx를 이용해 게시글을 구분, vo로 6가지 정보 담아야 함.
+
+//조회수 기능
+@Update("UPDATE BOARD SET COUNT = COUNT+1 WHERE IDX= #{idx}")
+public void boardCount(int idx);
+-> 전체 게시글의 조회수를 올리는 것이 아닌 클릭한 게시글만 조회수가 올라가야하므로 식별자로 구분된 idx 조건이  필요함.
+
+#boardUpdateForm
+<input type="hidden" name="idx" value="${vo.idx}">
+- > idx가 필요하지만 값이 보일 필요는 없으니 hidden 태그를 써준다.
+							<td><textarea name="content" class="form-control" rows="7" cols="">${vo.content}</textarea></td>
+-> 내용은 textarea를 써준다. 줄바꿈 된 값은 알아서 줄바꿈해줌. 
+띄어쓰기가 들어가면 절대 안됨!! 주의하기!
+엔터를 br태그로 바꿀 필요X 							
+
+Q. 날짜에 나오는 분, 초 지우기
+<td>${fn:split(vo.indate, " ")[0]}</td>
+-> 공백을 기준으로 구분
+-> 나눠진 값이 배열로 나오는데 가장 첫번째 값만 필요하니 [0] 써준것
+-> 배열은 0번부터 시작하니까!
+
+<button type="submit" class="btn btn-danger">수정</button>
+-> 수정한 값을 제출해야하니 submit 써줌.
+
+
+
+

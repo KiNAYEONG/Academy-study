@@ -1,0 +1,83 @@
+20240828_텍스트마이닝기초_혐오데이터셋
+<텍스트마이닝>
+- 비정형데이터인 텍스트 데이터에서 의미를 추출하는 작업
+- 자연어처리(NLP) 기술을 접목해서 최근에 많이 사용
+- 자연어처리 : 사람의 언어를 컴퓨터가 이해할 수 있도록 연구하는 학문
+
+# 에러 제거
+import pandas as pd
+import warnings
+warnings.filterwarnings('ignore')
+
+# 데이터 불러오기
+import os # operating system
+# 현재 내 파일의 작업 폴더(저장위치)를 확인 가능
+print(os.getcwd())
+
+# 현재 작업 디렉토리 내부 폴더 및 파일 확인
+# print(os.listdir('C:\Users\USER\03. MachineLearning')) # ->역슬래시 에러 발생
+# 역슬래시 에러 방지 : r'C~'
+print(os.listdir(r'C:\Users\USER\03. MachineLearning'))
+# 역슬래시를 이스케이프코드가 아닌 문자열 순수역슬래시로 인식해주세요~의 의미로 'r' 추가
+
+# 데이터 로딩
+train = pd.read_csv('data/unsmile_train_v1.0.tsv', delimiter='\t') 
+-> tsv, txt 파일은 tab으로 구분되어있어서 delimeter를 써야 구분자 에러가 안 뜬다!! csv는 comma 기준으로 분리된 것.
+
+# 결측치 확인
+display(test.info())
+
+# 전체 데이터에서 단어들의 빈도수 측정!
+text_train = train['문장']
+
+# 띄어쓰기 중심으로 토큰화 : nltk(natural language toolkit) 패키지 활용 
+# 토큰화를 도와주는 도구
+from nltk import word_tokenize 
+import nltk
+# 문장부호 정보를 다운로드
+nltk.download('punkt') 
+
+# 반복 프로세스의 정도를 시각화 하는 도구
+from tqdm import tqdm
+
+words = []
+for text in tqdm(text_train):
+    temp = word_tokenize(text) # 토큰화
+    words = words + temp       # 토큰화된 데이터 변수에 누적
+
+# 단어 빈도 세기
+from collections import Counter
+
+# 단어 개수 세서 딕셔너리 형태로 만들어줌.
+counter = Counter(words)
+
+# 상위 100개 데이터 확인
+words_most_100 = counter.most_common(100)
+
+# wordcloud 패키지 설치
+# !pip install wordcloud
+
+# 도구 불러오기
+from wordcloud import WordCloud
+
+# 객체 생성
+wc = WordCloud(background_color = 'white', # 배경색 설정
+              random_state = 828,
+              font_path = r'C:\Windows\Fonts\malgun.ttf') 
+
+# 입력할 때 딕셔너리 형태로 입력할 것!
+# 단어 빈도에 따른 워드클라우드 생성
+wc_rs = wc.generate_from_frequencies(dict(words_mos.t_100))
+
+#matplotlib에서 한글인코딩 필수
+import matplotlib.pyplot as plt 
+plt.rc('font',family="Malgun Gothic")
+
+plt.imshow(wc_rs)
+plt.axis('off')  # 축 제거
+plt.show()
+
+
+# 불리언인덱싱
+# train 데이터에서 clean 컬럼의 값이 1인 데이터만 추출 -> 문장만 뽑아오기
+clean_text = train[train['clean']==1]['문장']

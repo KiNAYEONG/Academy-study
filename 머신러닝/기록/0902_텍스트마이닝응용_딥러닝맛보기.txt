@@ -1,0 +1,334 @@
+2024.09.02.(월)_텍스트마이닝 응용
+
+# 토큰화
+# 키위를 활용하여 토큰화
+from kiwipiepy.utils import Stopwords
+from kiwipiepy import Kiwi
+
+# 키위객체 생성
+kiwi = Kiwi()
+
+-> import 후 반드시 객체생성()하기
+
+# 띄어쓰기 교정
+kiwi.space(review_pos)
+
+kiwi.tokenize(review_pos)
+
+kiwi_list = []
+for w in tq(review_pos):
+    rs = kiwi.tokenize(w)
+    kiwi_list += rs
+
+# 일반명사(NNG), 동사(VV), 형용사(VA)를 필터링해서 워드 클라우드 생성
+morphs_list = []
+for m in kiwi_list :
+    if m.tag in ['NNG','VV','VA']:
+        morphs_list.append(m.form)
+
+#워드클라우드 생성
+from collections import Counter
+from wordcloud import WordCloud
+
+wc = WordCloud(background_color='white',
+         random_state=92,
+         font_path = r"C:\Windows\Fonts\malgun.ttf")
+
+import matplotlib.pyplot as plt
+
+counter = Counter(morphs_list)
+words_most_100 = counter.most_common(100)
+# 반드시 딕셔너리 형태로 만들어주기
+wc_rs = wc.generate_from_frequencies(dict(words_most_100))
+plt.axis('off') # 축제거
+plt.imshow(wc_rs)
+plt.show()
+
+### TF-IDF 를 활용하여 데이터 벡터화 후 감성분석
+# TF-IDF : 하나의 문서에는 자주 등장하고 전체 문서에는 적게 등장하는 단어의 빈도를 측정
+from sklearn.feature_extraction.text import TfidfVectorizer
+review_data['리뷰']
+
+# TF-IDF 객체 생성
+tfidf_vect = TfidfVectorizer()
+-> import로 불러왔으니 객체 생성!
+# 단어사전 구축 -> fit()
+tfidf_vect.fit(review_data['리뷰'])  
+
+# 수치화 (벡터화) -> transform()
+tfidf_vect.transform(review_data['리뷰']) 
+# 단어사전의 개수가 너무 많아서 array로 보여줄 수 없음.
+
+# tf-idf 수치화 -> 하이퍼파라미터 조절
+# 하이퍼파라미터 조절 객체 생성
+tfidf_vect2 = TfidfVectorizer(stop_words=["하","슬"], 
+#불용어 등록 후 벡터화, 단어가 여러개라서 리스트 씀!
+                             ngram_range=(1,2),      #n-gram 설정 (1개 단어,2개 단어)
+                             max_df = 0.9,           #최대등장빈도
+                             min_df = 8)             #최소등장빈도
+
+# max_df : 전체문서에서 90% 이상 등장하는 단어는 무시
+# min_df : 단어가 최소 문서수 이상에서 등장해야지만 벡터화
+# 모델의 복잡도를 줄이기 위함(과대적합 방지)
+
+# 단어사전 구축
+-> 불용어 등록, 등장횟수 지정했으니 다시 단어사전 구축!
+tfidf_vect2.fit(review_data['리뷰'])
+
+# 벡터화 -> 학습용 문제데이터
+review_vect = tfidf_vect2.transform(review_data['리뷰'])
+
+review_data['별점'].unique()
+
+### 모델링
+# 수치화된 리뷰데이터를 통하여 별점을 학습 -> 새로운 리뷰 -> 별점 예측
+# 선형모델 활용
+from sklearn.linear_model import LogisticRegression
+# 선형모델 객체 생성
+logi_model = LogisticRegression(max_iter=200) # 최대반복횟수
+
+# 학습 데이터 내에서 다시 학습용, 평가용으로 분리하여 검증 → 교차검증
+from sklearn.model_selection import cross_val_score
+# cross_val_score(모델명, 문제, 정답, cv = 5)
+cross_val_score(logi_model, review_vect, review_data['별점'], cv=5)
+
+# 모델 학습 (교차검증은 모델 학습 전에도 사용 가능)
+logi_model.fit(review_vect, review_data['별점'])
+
+# logi_model.predict(테스트용 문제)
+# logi_model.predict("정말 별로인 상품입니다. 최악이에요") -> 수치화 필요
+-> 우리가 평가하고 싶은 새로운 리뷰도 수치화, 벡터화 작업이 필요하다!
+# 테스트 데이터 벡터화(단어 사전 이미 있으니 바로 transform)
+test_data = tfidf_vect2.transform(["정말 별로인 상품입니다. 최악이에요 다시는 안살거에요"])   -> 5점으로 평가됨.(잘못 예측)
+
+test_data3 = tfidf_vect2.transform(["진짜 별로에요. 절대 사지 마세요."])
+logi_model.predict(test_data3) -> 1점으로 평가됨.(제대로 예측)
+
+-> 토큰화가 중요하다! 토큰화에 따라 성능이 달라진다.
+
+[머신러닝 정리]
+머신러닝 7과정
+1. 문제정의
+2. 데이터 수집
+3. 데이터 전처리 -> 이상치, 결측치 처리, 인코딩(문자열 -> 수치화)
+4. 탐색적 데이터 분석(EDA, 시각화)
+5. 모델 선택, 하이퍼 파라미터 조정
+6. 모델 학습 : fit(학습용문제, 학습용 정답)
+7. 모델 평가 : predict()
+
+[딥러닝]
+실제값과 예측값의 차이 => error, loss function
+회귀와 분류에서 loss function을 부르는 명칭이 달랐음.
+회귀 : mse
+분류 : cross entrophy(이진법이라 0,1뿐이라 오차가 별로 없는 문제)
+
+--
+선형모델과 딥러닝은 최적화를 위해 반복을 한다는 공통점이 있다.
+optimizer => 최적화된 w,b를 찾아 한바퀴를 돔. 1epoch
+
+머신러닝
+Data(입력데이터) -> 사람이 선택한 특성 -> KNN, Linear -> 결과
+특성: 입력특성(문제데이터)
+모델객체생성(완성된 객체 사용)-> 모델학습-> 모델예측->모델 평가
+e.g. 완제품 로봇 : 팔만 움직일 수 있음(하이퍼파라미터 조절)
+
+
+딥러닝
+Data(입력데이터)  -> 신경망(딥러닝)-> 결과
+선형모델이 병렬적 다층구조(그들끼리는 영향X)
+대량의 데이터에서 복잡한 패턴이나 규칙을 찾는 능력이 뛰어남.
+모델객체생성(모델을 직접 구성, 신경망 설계)-> 모델학습 -> 모델예측 -> 모델평가
+e.g. 레고 : 우리가 구성하고자 하는 모양으로 구성(다양한 결과 만듦)
+
+2024.09.02.(월)_ex00_딥러닝맛보기
+# tensorflow 버전 확인
+import tensorflow as tf
+print(tf.__version__)
+# 코랩은 기본적으로 텐서플로우 설치되어있음
+# 설치버전 확인 이유 -> 딥러닝모델을 가져다 사용할 때 버전이 일치해야한다!
+# 오픈소스 사용시 버전 일치여부 확인! (2.17)
+
+# 코랩은 리눅스 환경이기 때문에 리눅스 명령어를 사용하면 편하다.
+# 현재 작업 디렉토리 확인 (print work directory) 
+!pwd 
+
+# 작업 디렉토리 변경방법
+%cd
+%cd "/content/drive/MyDrive/Colab Notebooks/24.09.02 DeepLearning"
+-> cd는 change directory를 의미한다.
+-> cd 앞에 붙는 기호에 따라 적용방식이 달라짐.
+-> !는 셀 실행시에만 적용되고, %는 영구적 적용이다.
+
+# 현재 폴더 안에 파일 list 확인
+!ls
+
+#
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+data = pd.read_csv("data/student-mat.csv", delimiter=';')
+data.info()  # 데이터 불러왔으니까 .info()
+
+# 정답 레이블로 사용할 컬럼 : G3 (3학년 성적)
+# 3학년 성적을 학습 및 예측하는 모델링
+# 다양한 입력 특성(문제데이터) 중에서 1개 특성만 선택 진행 -> 공부시간(studytime)
+
+##### 데이터 분리
+### 문제는 반드시 2차원이라 large X
+1. 문제(X)와 정답(y)
+2. train, test (7:3)
+-> 학습용 데이터와 테스트용 데이터를 7:3으로 나눈다.
+
+# 문제, 정답 분리
+X = data['studytime']
+y = data['G3']
+
+# train, test 분리
+# 분리도구 불러오기
+from sklearn.model_selection import train_test_split
+X_train,X_test, y_train, y_test = train_test_split(X,y, test_size = 0.3, random_state=92)
+
+# 크기확인
+print('훈련용 문제: ',X_train.shape)
+print('훈련용 답: ',y_train.shape)
+print('테스트용 문제: ',X_test.shape)
+print('테스트용 답: ',y_test.shape)
+
+# X.values.reshape(행,열)
+X.values.reshape(-1,1)
+Q. -1을 쓰는 이유?
+-> 행을 알아서 맞춰주기 위해서!
+
+# 머신러닝 모델링 -> 회귀 (수학성적점수)
+0) 모델 불러오기
+from sklearn.linear_model import LinearRegression # 선형회귀모델
+1) 모델 객체생성 (불러왔으면 반드시 객체생성!)
+linear_model = LinearRegression()
+2) 모델 학습 fit(학습용문제, 학습용정답)
+주의!! 문제데이터는 늘 2차원!!
+linear_model.fit(X_train.values.reshape(-1,1), y_train)
+3) 모델 예측 predict(테스트용 문제) -> 2차원
+pre = linear_model.predict(X_test.values.reshape(-1,1))
+4) 모델 평가 score -> r2 score
+# mse 출력 해보기!!!
+# mean_squared_error(실제값, 예측값), mse
+from sklearn.metrics import mean_squared_error
+mean_squared_error(y_test, pre)
+
+# 신경망 모델 만드는 절차
+모델 구조 설계(틀 불러오기) > 학습/평가 방법 설정(컴파일) > 모델 학습 및 학습 현황 시각화 > 모델 예측 및 평가
+
+# 환경세팅
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Activation
+
+# Sequential : 인공신경망의 뼈대를 구축하기 위한 함수(기능, 도구)
+# Dense : 신경망층을 구성하는 함수(기능)
+# Activation : 활성화 함수(각층의 정보를 전달하는 중간 역할)
+
+# 컬럼명 확인하기
+# 전체정보
+data.info()
+# studytime int(숫자) - 컬럼(특성) 1개만 활용해서 딥러닝 학습시키기!
+
+# 1. 모델 설계
+# 뼈대 설계
+model = Sequential()
+
+# 층 내용 설계
+# 입력층 + 중간층(1개)
+# units (뉴런)개수 설정 : 정답이 x → 사람이 설정하는 파라미터(하이퍼 파라미터)
+# units 4개 설정
+# input_dim : 입력 특성의 크기(개수, 차원) → 사용 특성(열)의 개수
+# 데이터의 크기는 입력층에서만 input_dim 활용해서 설정
+model.add(Dense(units=4, input_dim=1))
+model.add(Activation('sigmoid'))
+# 각 유닛(뉴런)에는 활성화함수가 연결됨 -> 데이터 전달하는 중간다리 역할, 사람은 추상적인 사고
+
+# 출력층
+# 회귀 출력층 units=1, Activation='linear' / y=wx+b 이건 공식임!!!!!(회귀일때만 생략 가능)
+# 뉴런 y=wx+b
+model.add(Dense(units=1))
+#model.add(Activation('linear')) 회귀모델이니까 Activation 생략 가능
+
+# 모델 정보 요약
+model.summary()
+
+# Param : 해당 층(중간층1)에 w,b의 총 개수 
+=> 모델의 복잡도 파악이 가능
+
+# 2. 모델 학습/평가 방법 설정(compile, 컴파일)
+# 모델.compile(오차계산, 최적화함수, 평가지표)
+# loss(손실함수)
+- 회귀 : mse
+# optimizer(최적화함수) : 다양한 종류가 존재
+# 평가지표
+- 회귀 : mse, rmse, mae, r2_score
+- 분류 : accuracy, recall(재현율), precision, f1-score
+# 'mse' > mse() 공식이 실행되는 것
+model.compile(loss='mse', # 평균제곱오차
+              optimizer='sgd', # 경사하강법:sgd
+              )
+
+# studytime 특성 1개 잘라서
+# train, test 분리
+X = data['studytime']
+X.ndim # number of dimension 차원의 수 >> 1차원
+X.shape # 1차원 (숫자,)
+y = data['G3']
+y.shape
+
+# 훈련셋, 테스트셋 분리
+# 7:3
+# random_state = 4
+# test_size = 30 30개의 행만 test, 365개 train 행으로 분리
+# 비율의 개념 : 실수형태로 입력
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_state=4)
+-> 여기서 test_size 30으로 쓰면 정말 30만 씀. 
+-> 원하는 결과를 얻기 위해서는 0.3을 쓰자.
+print('train set:', X_train.shape, y_train.shape)
+print('test set:', X_test.shape, y_test.shape)
+
+# 3. 모델 학습 및 시각화
+# 모델명.fit(훈련문제, 훈련답,반복횟수epochs(에포크))
+# 반복횟수 : epochs(에포크)
+# 300번 반복
+h = model.fit(X_train, y_train, epochs=300)
+# 새롭게 학습을 진행하거나, 코드 에러 문제를 해결하고 학습을 재실행할 경우
+# Sequential 뼈대구축하는 코드부터 재실행해야함.
+
+# 시각화 - 수치의 추이를 확인할 수 있는 그래프 (선그래프)
+h.history.keys() # dict
+h_loss = h.history['loss']
+h_loss
+
+# x축 반복횟수, y축 loss
+plt.plot(range(1, 301), h_loss)
+-> 300개의 결과를 보고 싶으니까 1,301로 범위 설정한 것.
+plt.show()
+
+# 모델마다 오차의 시작점이 다름 >> y=wx+b(선형함수) w,b의 세팅 초반에 랜덤하게 셋팅
+# 여러번 반복하면서 오차가 최소가 되게하는 w,b를 찾는 것이 딥러닝 신경망 모델의 목적
+# 300번 반복을 진행하지만, 10~20번째 사이에서 오차의 개선이 빠르게 진행됨을 알 수 있음(장점)
+Q. 오차가 20 정도에서 수렴하는데 더 오차를 더 줄이고 싶다면? 
+1. 데이터를 더 좋은 특성을 많이 연결 2. 모델 설계 부분 조정, 하이퍼 파라미터 변경
+
+# 기술통계
+y.describe()
+
+# 4. 모델 예측
+# 모델.predict(문제)
+pre = model.predict(X_test)
+
+# 모델 평가
+# 모델 기본적인 평가 기능(도구) : 회귀 mse
+# 모델.evaluate()
+# 머신러닝 sklearn 모델 score 함수비교
+# model.score(테스트문제, 테스트답)
+model.evaluate(X_test, y_test)
+
+
+
